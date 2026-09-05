@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<ruleset name="BINES">
+	<description>BINES coding standard: every function documented, clean modern PHP.</description>
+	<file>bines-staging-guard.php</file>
+	<file>src</file>
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+	<rule ref="Generic.PHP.Syntax"/>
+	<rule ref="Generic.PHP.DeprecatedFunctions"/>
+	<rule ref="Generic.PHP.ForbiddenFunctions"/>
+	<rule ref="Squiz.Commenting.FunctionComment">
+		<exclude name="Squiz.Commenting.FunctionComment.EmptyThrows"/>
+		<exclude name="Squiz.Commenting.FunctionComment.ThrowsNoFullStop"/>
+	</rule>
+	<rule ref="Squiz.Commenting.FileComment">
+		<exclude name="Squiz.Commenting.FileComment.PackageTagOrder"/>
+		<exclude name="Squiz.Commenting.FileComment.AuthorTagOrder"/>
+		<exclude name="Squiz.Commenting.FileComment.CopyrightTagOrder"/>
+		<exclude name="Squiz.Commenting.FileComment.MissingAuthorTag"/>
+		<exclude name="Squiz.Commenting.FileComment.MissingCopyrightTag"/>
+		<exclude name="Squiz.Commenting.FileComment.MissingSubpackageTag"/>
+	</rule>
+</ruleset>

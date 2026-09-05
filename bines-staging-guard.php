@@ -1,0 +1,14 @@
+<?php
+/**
+ * Plugin Name: BINES Staging Guard
+ * Description: On non-production sites: staging badge, mail catch, outbound HTTP firewall, noindex. Inert on production.
+ * Version: 0.1.0
+ * Requires PHP: 8.3
+ * Author: BINESTech
+ *
+ * @package BinesGuard
+ */
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/src/Environment.php';
