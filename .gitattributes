@@ -1,0 +1,8 @@
+/vendor export-ignore
+/tests export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/phpunit.xml.dist export-ignore
+/phpcs.xml export-ignore
+/patchwork.json export-ignore

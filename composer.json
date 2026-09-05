@@ -22,5 +22,17 @@
   "scripts": {
     "lint": "phpcs",
     "test": "pest"
+  },
+  "archive": {
+    "exclude": [
+      "/vendor",
+      "/tests",
+      "/.github",
+      "/.gitignore",
+      "/.phpunit.cache",
+      "/phpunit.xml.dist",
+      "/phpcs.xml",
+      "/patchwork.json"
+    ]
   }
 }
