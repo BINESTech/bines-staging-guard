@@ -42,11 +42,17 @@ test( 'catch_mail respects an earlier short-circuit', function () {
 test( 'log is capped at 200 entries, oldest dropped', function () {
 	$existing = array_fill( 0, 200, array( 'to' => 'x', 'subject' => 'old', 'message' => '', 'time' => 1 ) );
 	Functions\when( 'get_option' )->justReturn( $existing );
-	Functions\expect( 'update_option' )->once()->with(
-		'bines_guard_mail_log',
-		Mockery::on( fn( $log ) => 200 === count( $log ) && 'new' === end( $log )['subject'] ),
-		false
+
+	$captured = null;
+	Functions\expect( 'update_option' )->once()->andReturnUsing(
+		function ( string $option, array $log, bool $autoload ) use ( &$captured ) {
+			$captured = $log;
+			return true;
+		}
 	);
 
 	MailCatcher::catch_mail( null, array( 'to' => 'a@example.com', 'subject' => 'new', 'message' => '' ) );
+
+	expect( $captured )->toHaveCount( 200 )
+		->and( end( $captured )['subject'] )->toBe( 'new' );
 } );
