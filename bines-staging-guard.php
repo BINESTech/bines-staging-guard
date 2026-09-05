@@ -17,3 +17,6 @@ require_once __DIR__ . '/src/MailCatcher.php';
 require_once __DIR__ . '/src/Badge.php';
 require_once __DIR__ . '/src/NoIndex.php';
 require_once __DIR__ . '/src/LogPage.php';
+require_once __DIR__ . '/src/Guard.php';
+
+BinesGuard\Guard::boot();
