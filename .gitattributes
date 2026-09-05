@@ -6,3 +6,5 @@
 /phpunit.xml.dist export-ignore
 /phpcs.xml export-ignore
 /patchwork.json export-ignore
+/.phpunit.cache export-ignore
+/composer.lock export-ignore

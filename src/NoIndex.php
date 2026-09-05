@@ -39,7 +39,7 @@ final class NoIndex {
 	}
 
 	/**
-	 * pre_option_blog_public / option_blog_public callback.
+	 * pre_option_blog_public callback.
 	 *
 	 * @param boolean|integer|string|array|null $value Stored value (ignored).
 	 * @return string Always '0'.

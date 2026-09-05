@@ -42,6 +42,8 @@ test( 'intercept returns WP_Error and logs host and method for a blocked call', 
 	Functions\when( 'wp_get_environment_type' )->justReturn( 'staging' );
 	Functions\when( '__' )->returnArg();
 	Functions\when( 'get_option' )->justReturn( array() );
+	Functions\when( 'home_url' )->justReturn( 'https://example.test' );
+	Functions\when( 'site_url' )->justReturn( 'https://example.test' );
 	Functions\expect( 'update_option' )->once()->with(
 		'bines_guard_http_log',
 		Mockery::on( fn( $log ) => 1 === count( $log ) && 'hooks.zapier.com' === $log[0]['host'] && 'POST' === $log[0]['method'] ),
@@ -59,6 +61,8 @@ test( 'intercept returns WP_Error and logs host and method for a blocked call', 
 
 test( 'intercept passes an allowlisted call through untouched', function () {
 	Functions\when( 'wp_get_environment_type' )->justReturn( 'staging' );
+	Functions\when( 'home_url' )->justReturn( 'https://example.test' );
+	Functions\when( 'site_url' )->justReturn( 'https://example.test' );
 	Filters\expectApplied( 'bines_guard_allowlist' )->once()->andReturnFirstArg();
 
 	$result = Firewall::intercept( false, array( 'method' => 'GET' ), 'https://api.wordpress.org/x' );
@@ -69,4 +73,41 @@ test( 'intercept passes an allowlisted call through untouched', function () {
 test( 'intercept respects an earlier preempt value', function () {
 	$result = Firewall::intercept( array( 'body' => 'cached' ), array( 'method' => 'POST' ), 'https://hooks.zapier.com/x' );
 	expect( $result )->toBe( array( 'body' => 'cached' ) );
+} );
+
+test( "intercept allows the site's own host so cron and loopback work", function () {
+	Functions\when( 'home_url' )->justReturn( 'https://staging.example.test/wp' );
+	Functions\when( 'site_url' )->justReturn( 'https://staging.example.test/wp' );
+	Filters\expectApplied( 'bines_guard_allowlist' )->once()->andReturnFirstArg();
+	Functions\expect( 'update_option' )->never();
+
+	$result = Firewall::intercept( false, array( 'method' => 'POST' ), 'https://staging.example.test/wp/wp-cron.php?doing_wp_cron=1' );
+
+	expect( $result )->toBeFalse();
+} );
+
+test( 'allows ignores malformed allowlist entries', function () {
+	$allowlist = array(
+		'junk',
+		array( 'host' => '' ),
+		array( 'host' => 'api.example.com' ),
+	);
+	expect( Firewall::allows( 'https://api.example.com/x', 'GET', $allowlist ) )->toBeFalse();
+
+	$allowlist = array(
+		array( 'host' => 'api.example.com', 'methods' => 'GET' ),
+	);
+	expect( Firewall::allows( 'https://api.example.com/x', 'GET', $allowlist ) )->toBeTrue();
+} );
+
+test( 'a filter extension is honoured by intercept', function () {
+	Functions\when( 'home_url' )->justReturn( 'https://example.test' );
+	Functions\when( 'site_url' )->justReturn( 'https://example.test' );
+	Filters\expectApplied( 'bines_guard_allowlist' )->once()->andReturnUsing(
+		fn( $list ) => array_merge( $list, array( array( 'host' => 'api.example.com', 'methods' => array( 'POST' ) ) ) )
+	);
+
+	$result = Firewall::intercept( false, array( 'method' => 'POST' ), 'https://api.example.com/hook' );
+
+	expect( $result )->toBeFalse();
 } );

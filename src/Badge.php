@@ -57,11 +57,17 @@ final class Badge {
 	}
 
 	/**
-	 * Inline CSS for both surfaces. Printed in admin and front head.
+	 * Inline CSS for both surfaces. Printed in admin and front head, but
+	 * skipped on the front end for logged-out visitors since front_strip()
+	 * never renders for them and the CSS would otherwise leak on every
+	 * public page for no reason.
 	 *
 	 * @return void
 	 */
 	public static function styles(): void {
+		if ( ! is_admin() && ! is_user_logged_in() ) {
+			return;
+		}
 		echo '<style id="bines-guard-css">'
 			. '#wpadminbar .bines-guard-node{background:#b32d2e!important}'
 			. '#wpadminbar .bines-guard-badge{color:#fff;font-weight:700}'

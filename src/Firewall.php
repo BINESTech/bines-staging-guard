@@ -28,6 +28,10 @@ final class Firewall {
 	 * read-only booking availability. POST to the booking provider is
 	 * deliberately absent so staging can never create a real appointment.
 	 *
+	 * The site's own host (home_url()/site_url()) is added at runtime by
+	 * intercept() via own_site_entries(); it is not part of this list so
+	 * this method stays pure and testable without WordPress loaded.
+	 *
 	 * @return array<int, array{host:string, methods:string[]}>
 	 */
 	public static function default_allowlist(): array {
@@ -39,6 +43,28 @@ final class Firewall {
 			array( 'host' => 'api.github.com', 'methods' => array( 'GET' ) ),
 			array( 'host' => '*.cliniko.com', 'methods' => array( 'GET' ) ),
 		);
+	}
+
+	/**
+	 * Allowlist entries for this site's own hosts, so WP-Cron and loopback
+	 * requests (wp-cron.php, the site health loopback check, etc.) never
+	 * get blocked. Reads home_url() and site_url() at call time.
+	 *
+	 * @return array<int, array{host:string, methods:string[]}>
+	 */
+	public static function own_site_entries(): array {
+		$hosts = array();
+		foreach ( array( home_url(), site_url() ) as $url ) {
+			$host = strtolower( (string) host_of( (string) $url ) );
+			if ( '' !== $host ) {
+				$hosts[ $host ] = true;
+			}
+		}
+		$entries = array();
+		foreach ( array_keys( $hosts ) as $host ) {
+			$entries[] = array( 'host' => $host, 'methods' => array( '*' ) );
+		}
+		return $entries;
 	}
 
 	/**
@@ -57,10 +83,13 @@ final class Firewall {
 		$method = strtoupper( $method );
 
 		foreach ( $allowlist as $entry ) {
-			if ( ! self::host_matches( $host, strtolower( $entry['host'] ) ) ) {
+			if ( ! is_array( $entry ) || '' === (string) ( $entry['host'] ?? '' ) ) {
 				continue;
 			}
-			$methods = array_map( 'strtoupper', $entry['methods'] );
+			if ( ! self::host_matches( $host, strtolower( (string) $entry['host'] ) ) ) {
+				continue;
+			}
+			$methods = array_map( 'strtoupper', (array) ( $entry['methods'] ?? array() ) );
 			if ( in_array( '*', $methods, true ) || in_array( $method, $methods, true ) ) {
 				return true;
 			}
@@ -99,7 +128,7 @@ final class Firewall {
 			return $preempt;
 		}
 		$method    = (string) ( $args['method'] ?? 'GET' );
-		$allowlist = (array) apply_filters( 'bines_guard_allowlist', self::default_allowlist() );
+		$allowlist = (array) apply_filters( 'bines_guard_allowlist', array_merge( self::default_allowlist(), self::own_site_entries() ) );
 
 		if ( self::allows( $url, $method, $allowlist ) ) {
 			return false;

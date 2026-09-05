@@ -6,7 +6,8 @@ Everywhere else it:
 1. shows a red badge in the admin bar and a strip for logged-in users,
 2. catches every `wp_mail()` into Tools → Staging Guard (last 200, nothing sent),
 3. refuses outbound HTTP not on the allowlist (`pre_http_request`), logging host + method,
-4. sends `X-Robots-Tag: noindex` and pins `blog_public` to 0.
+4. sends the `X-Robots-Tag: noindex` header on front-end requests and pins `blog_public`
+   to 0 (admin and REST responses are not covered; they require authentication anyway).
 
 Allowlist ships with wordpress.org hosts, GitHub GET, and **GET only** to
 `*.cliniko.com`. Extend per site:
@@ -16,6 +17,9 @@ add_filter( 'bines_guard_allowlist', fn( array $list ) => array_merge( $list, ar
 	array( 'host' => 'api.example.com', 'methods' => array( 'GET', 'POST' ) ),
 ) ) );
 ```
+
+The site's own host (`home_url()` / `site_url()`) is always allowed so WP-Cron and
+loopback checks keep working.
 
 Turn off deliberately on a non-production site with
 `define( 'BINES_GUARD_DISABLE', true );` in the environment config.

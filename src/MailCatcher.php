@@ -17,11 +17,14 @@ namespace BinesGuard;
  */
 final class MailCatcher {
 
-	public const LOG_OPTION = 'bines_guard_mail_log';
-	public const LOG_CAP    = 200;
+	public const LOG_OPTION  = 'bines_guard_mail_log';
+	public const LOG_CAP     = 200;
+	public const MESSAGE_CAP = 20000;
 
 	/**
-	 * Normalise wp_mail() attributes into a log entry.
+	 * Normalise wp_mail() attributes into a log entry. The message is
+	 * capped at MESSAGE_CAP characters so a runaway HTML email cannot
+	 * bloat the option table.
 	 *
 	 * @param array $atts WP_mail attributes: to, subject, message, headers, attachments.
 	 * @return array{to:string, subject:string, message:string, time:int}
@@ -31,10 +34,14 @@ final class MailCatcher {
 		if ( is_array( $to ) ) {
 			$to = implode( ', ', array_map( 'strval', $to ) );
 		}
+		$message = (string) ( $atts['message'] ?? '' );
+		if ( mb_strlen( $message ) > self::MESSAGE_CAP ) {
+			$message = mb_substr( $message, 0, self::MESSAGE_CAP ) . "\n… [truncated by BINES Staging Guard]";
+		}
 		return array(
 			'to'      => (string) $to,
 			'subject' => (string) ( $atts['subject'] ?? '' ),
-			'message' => (string) ( $atts['message'] ?? '' ),
+			'message' => $message,
 			'time'    => time(),
 		);
 	}

@@ -45,3 +45,18 @@ test( 'front strip prints the label for logged-in users', function () {
 	Badge::front_strip();
 	expect( ob_get_clean() )->toContain( 'STAGING' )->toContain( 'bines-guard-strip' );
 } );
+
+test( 'styles prints nothing for a logged-out front-end visitor', function () {
+	Functions\when( 'is_admin' )->justReturn( false );
+	Functions\when( 'is_user_logged_in' )->justReturn( false );
+	ob_start();
+	Badge::styles();
+	expect( ob_get_clean() )->toBe( '' );
+} );
+
+test( 'styles prints the style tag in admin', function () {
+	Functions\when( 'is_admin' )->justReturn( true );
+	ob_start();
+	Badge::styles();
+	expect( ob_get_clean() )->toContain( 'bines-guard-css' );
+} );

@@ -35,6 +35,16 @@ test( 'catch_mail logs and returns true so wp_mail reports success without sendi
 	expect( $result )->toBeTrue();
 } );
 
+test( 'entry_from_atts truncates an oversized message and leaves a short one untouched', function () {
+	$long  = str_repeat( 'x', 25000 );
+	$entry = MailCatcher::entry_from_atts( array( 'message' => $long ) );
+	expect( $entry['message'] )->toHaveLength( MailCatcher::MESSAGE_CAP + mb_strlen( "\n… [truncated by BINES Staging Guard]" ) )
+		->and( $entry['message'] )->toEndWith( "\n… [truncated by BINES Staging Guard]" );
+
+	$short = MailCatcher::entry_from_atts( array( 'message' => 'Hi there' ) );
+	expect( $short['message'] )->toBe( 'Hi there' );
+} );
+
 test( 'catch_mail respects an earlier short-circuit', function () {
 	expect( MailCatcher::catch_mail( false, array() ) )->toBeFalse();
 } );
