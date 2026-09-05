@@ -13,3 +13,4 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/src/Environment.php';
 require_once __DIR__ . '/src/Firewall.php';
+require_once __DIR__ . '/src/MailCatcher.php';
