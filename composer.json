@@ -2,7 +2,7 @@
   "name": "binestech/bines-staging-guard",
   "description": "BINES staging guard: badge, mail catch, outbound HTTP firewall, noindex on non-production sites.",
   "type": "wordpress-muplugin",
-  "license": "proprietary",
+  "license": "GPL-2.0-or-later",
   "require": {
     "php": ">=8.3",
     "composer/installers": "^2.0"
@@ -13,10 +13,15 @@
     "squizlabs/php_codesniffer": "^4.0"
   },
   "autoload-dev": {
-    "psr-4": { "BinesGuard\\": "src/" }
+    "psr-4": {
+      "BinesGuard\\": "src/"
+    }
   },
   "config": {
-    "allow-plugins": { "composer/installers": true, "pestphp/pest-plugin": true },
+    "allow-plugins": {
+      "composer/installers": true,
+      "pestphp/pest-plugin": true
+    },
     "sort-packages": true,
     "platform": {
       "php": "8.3.0"
